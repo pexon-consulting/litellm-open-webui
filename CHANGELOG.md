@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 - 2026-10-19
+
+- Presidio services start with `GUNICORN_CMD_ARGS=--no-control-socket`. gunicorn 25.1.0 in the Presidio 2.2.362 images could deadlock at start, so the analyzer stayed unhealthy (seen in CI).
+
 ## 0.1.0 - 2026-10-19
 
 First release.
