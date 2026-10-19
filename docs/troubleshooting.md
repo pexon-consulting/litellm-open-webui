@@ -18,6 +18,7 @@ This page lists the errors people actually hit with this stack, each with the sy
 - [A budget was overshot](#a-budget-was-overshot)
 - [An environment change has no effect](#an-environment-change-has-no-effect)
 - [Presidio: supported languages have to be consistent](#presidio-supported-languages-have-to-be-consistent)
+- [Presidio analyzer stays unhealthy](#presidio-analyzer-stays-unhealthy)
 - [Port 3000 is already in use](#port-3000-is-already-in-use)
 - [Lost .env or LITELLM_SALT_KEY](#lost-env-or-litellm_salt_key)
 - [Docker Compose is too old for !reset](#docker-compose-is-too-old-for-reset)
@@ -300,6 +301,12 @@ docker compose -f compose.yaml -f compose.pii.yaml up -d --wait
 ```
 
 More in [PII masking with Presidio and LiteLLM](pii-masking.md).
+
+## Presidio analyzer stays unhealthy
+
+The analyzer log stops after `Control socket listening at /app/gunicorn.ctl` and never shows `Booting worker with pid`. `docker compose up --wait` then fails with `container ... presidio-analyzer-1 is unhealthy`.
+
+Cause: the Presidio 2.2.362 images run gunicorn 25.1.0, whose new control socket can deadlock the worker at start. It happens intermittently, more often on some hosts than others (seen in GitHub Actions, see the [gunicorn discussion](https://github.com/benoitc/gunicorn/discussions/3530)). `compose.pii.yaml` therefore sets `GUNICORN_CMD_ARGS: --no-control-socket` for both Presidio services. If you run Presidio from your own compose file, set the same variable.
 
 ## Port 3000 is already in use
 
