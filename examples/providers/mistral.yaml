@@ -1,0 +1,47 @@
+# Mistral AI (France), EU regional endpoint
+# - api.eu.mistral.ai processes in EU/EFTA data centres; api.mistral.ai is global, no location commitment.
+# - EU endpoint costs 1.1x the list price. Agents, Batch and Files are not available regionally.
+# - Inputs and outputs are kept 30 rolling days for abuse monitoring unless Mistral approves ZDR.
+# - DPA: https://legal.mistral.ai/terms/data-processing-addendum/
+# Sources: https://docs.mistral.ai/inference/regional-inference, Mistral privacy policy (seen 2026-10-16)
+# .env: MISTRAL_API_KEY
+
+# Before you copy this file over litellm/models.yaml:
+# - router_settings.fallbacks in litellm/config.yaml names mistral-medium and mistral-small,
+#   which are in this file. Update it if you rename or remove them.
+# - The "embedding" entry at the end is used by Open WebUI for document search. Keep it.
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: mistral-small
+    litellm_params:
+      model: mistral/mistral-small-2603
+      api_base: https://api.eu.mistral.ai/v1
+      api_key: os.environ/MISTRAL_API_KEY
+      input_cost_per_token: 0.000000165   # USD, list price x 1.1
+      output_cost_per_token: 0.00000066
+
+  - model_name: mistral-medium
+    litellm_params:
+      model: mistral/mistral-medium-3-5
+      api_base: https://api.eu.mistral.ai/v1
+      api_key: os.environ/MISTRAL_API_KEY
+      input_cost_per_token: 0.00000165
+      output_cost_per_token: 0.00000825
+
+  - model_name: mistral-large
+    litellm_params:
+      model: mistral/mistral-large-2512
+      api_base: https://api.eu.mistral.ai/v1
+      api_key: os.environ/MISTRAL_API_KEY
+      input_cost_per_token: 0.00000055
+      output_cost_per_token: 0.00000165
+
+  - model_name: embedding
+    litellm_params:
+      model: mistral/mistral-embed
+      api_base: https://api.eu.mistral.ai/v1
+      api_key: os.environ/MISTRAL_API_KEY
+      input_cost_per_token: 0.00000011
+    model_info:
+      mode: embedding

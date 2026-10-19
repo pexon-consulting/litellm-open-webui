@@ -1,0 +1,41 @@
+# Recognizers for German and English. Generic recognizers without "supported_languages"
+# run for every language below. Country-specific US/UK recognizers are left out.
+supported_languages:
+  - de
+  - en
+global_regex_flags: 26
+
+recognizers:
+  - name: EmailRecognizer
+    type: predefined
+  - name: IbanRecognizer
+    type: predefined
+  - name: PhoneRecognizer
+    type: predefined
+  - name: IpRecognizer
+    type: predefined
+  - name: UrlRecognizer
+    type: predefined
+  - name: CryptoRecognizer
+    type: predefined
+  - name: CreditCardRecognizer
+    type: predefined
+    supported_languages:
+      - language: de
+        context: [kreditkarte, karte, visa, mastercard, amex, karteninhaber]
+      - language: en
+        context: [credit, card, visa, mastercard, amex]
+  - name: SpacyRecognizer
+    type: predefined
+
+  # German tax identification number (Steuer-ID): 11 digits, first digit not 0.
+  # Pattern only, no checksum. Context words raise the score.
+  - name: DeTaxIdRecognizer
+    type: custom
+    supported_entity: DE_TAX_ID
+    supported_language: de
+    patterns:
+      - name: steuer_id
+        regex: "\\b[1-9]\\d{10}\\b"
+        score: 0.3
+    context: [steuer-id, steueridentifikationsnummer, identifikationsnummer, steuernummer, idnr]

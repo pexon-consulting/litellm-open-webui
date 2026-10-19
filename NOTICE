@@ -1,0 +1,39 @@
+litellm-open-webui
+Copyright (c) Pexon Consulting GmbH, MIT License (see LICENSE)
+
+The MIT License covers the files in this repository (compose files, configuration,
+scripts, tests, documentation). It does not cover the container images the compose
+files pull. Each of them comes with its own licence:
+
+- LiteLLM (ghcr.io/berriai/litellm), BerriAI. MIT License, except the "enterprise/"
+  directory of the LiteLLM repository, which has its own licence. The image also contains
+  BerriAI's proprietary enterprise/ code and the litellm_enterprise package. Without
+  LITELLM_LICENSE those features stay off. This repository only uses features that work
+  without a LiteLLM enterprise licence.
+  https://github.com/BerriAI/litellm/blob/main/LICENSE
+- Open WebUI (ghcr.io/open-webui/open-webui), Open WebUI Inc. Open WebUI License
+  (BSD-3-Clause plus a branding clause). Above 50 end users in any rolling 30-day
+  period, the "Open WebUI" name and logo may not be removed or altered without written
+  permission or an enterprise licence. This repository does not change the branding.
+  https://github.com/open-webui/open-webui/blob/main/LICENSE
+- Microsoft Presidio (mcr.microsoft.com/presidio-analyzer, presidio-anonymizer), MIT License.
+  https://github.com/microsoft/presidio
+- spaCy model de_core_news_md 3.8.0 (Explosion), installed into the Presidio image by
+  presidio/Dockerfile. MIT License (package metadata). Trained on the TIGER corpus
+  (commercial licence held by Explosion), WikiNER (CC BY 4.0, Nothman et al.) and
+  Explosion fastText vectors (CC0).
+  https://github.com/explosion/spacy-models
+- spaCy model en_core_web_lg (Explosion), included in the official presidio-analyzer image,
+  MIT License (package metadata); training data includes OntoNotes 5.
+- PostgreSQL with pgvector (pgvector/pgvector), PostgreSQL License.
+- Redis 7.4 (redis:7.4.11-alpine), Redis Source Available License 2.0 / SSPL for 7.4.
+  Self-hosted internal use is allowed; check the terms if you offer Redis as a service.
+  BSD-licensed alternative: Valkey.
+- Caddy (caddy:2.10.2-alpine), Apache License 2.0.
+- Python (python:3.13.16-alpine, test mock only), PSF License.
+
+LiteLLM, Open WebUI, Presidio, Microsoft, Entra, Azure, AWS, Bedrock, Google, Vertex AI,
+Mistral, OpenAI, STACKIT, IONOS, OVHcloud, Scaleway and T-Systems are names or trademarks
+of their respective owners. This project is not affiliated with, endorsed by or sponsored
+by any of them. All other product and company names mentioned in this repository are
+trademarks of their respective owners; no affiliation, endorsement or sponsorship is implied.

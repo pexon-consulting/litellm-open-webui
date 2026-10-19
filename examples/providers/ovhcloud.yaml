@@ -1,0 +1,34 @@
+# OVHcloud AI Endpoints (France, Gravelines)
+# - Data is not stored or shared during or after use, not used for training; only billing data is kept.
+# - LiteLLM has a native provider "ovhcloud/" with base https://oai.endpoints.kepler.ai.cloud.ovh.net/v1
+#   and knows the prices of these models.
+# Sources: https://docs.ovhcloud.com/en/guides/public-cloud/ai-machine-learning/ai-endpoints-capabilities,
+#          https://docs.litellm.ai/docs/providers/ovhcloud (seen 2026-10-16)
+# .env: OVHCLOUD_API_KEY
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: gpt-oss-120b
+    litellm_params:
+      model: ovhcloud/gpt-oss-120b
+      api_key: os.environ/OVHCLOUD_API_KEY
+
+  - model_name: llama-3.3-70b
+    litellm_params:
+      model: ovhcloud/Meta-Llama-3_3-70B-Instruct
+      api_key: os.environ/OVHCLOUD_API_KEY
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Not tested in this repo: take an embedding model id from the AI Endpoints catalogue and
+  # check that LiteLLM knows its price, or add input_cost_per_token.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: ovhcloud/<ovh-embedding-model-id>
+  #     api_key: os.environ/OVHCLOUD_API_KEY
+  #   model_info:
+  #     mode: embedding

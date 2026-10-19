@@ -1,0 +1,2 @@
+# Guardrails. Empty by default. compose.pii.yaml replaces this file with guardrails.pii.yaml.
+guardrails: []

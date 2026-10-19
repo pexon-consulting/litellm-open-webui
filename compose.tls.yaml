@@ -1,0 +1,32 @@
+# HTTPS overlay: Caddy in front of Open WebUI with an automatic Let's Encrypt certificate.
+# Needs a DNS record for DOMAIN pointing to this server and ports 80 and 443 open.
+#   DOMAIN=chat.example.com in .env, WEBUI_URL=https://chat.example.com
+#   docker compose -f compose.yaml -f compose.tls.yaml up -d
+# LiteLLM stays on 127.0.0.1:4000. Reach its admin UI through an SSH tunnel:
+#   ssh -L 4000:127.0.0.1:4000 your-server, then http://localhost:4000/ui
+
+services:
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      open-webui:
+        condition: service_healthy
+
+  open-webui:
+    # Only reachable through Caddy
+    ports: !reset []
+
+volumes:
+  caddy_data:
+  caddy_config:

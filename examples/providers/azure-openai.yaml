@@ -1,0 +1,50 @@
+# Azure OpenAI / Microsoft Foundry, EU Data Zone
+# - Create the deployment with type "DataZoneStandard" in an EU region (e.g. swedencentral).
+#   GlobalStandard may process in any Azure region; DeveloperTier has no residency guarantee.
+# - The EU Data Zone follows the EU Data Boundary and can include EFTA countries.
+# - Block Global SKUs with an Azure Policy on sku.name, so nobody deploys one by accident.
+# - Prompts are not available to OpenAI and not used for training. Abuse monitoring stores
+#   flagged data in your geography unless Microsoft approves "modified abuse monitoring".
+# Sources: https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/deployment-types,
+#          https://learn.microsoft.com/en-us/azure/ai-foundry/responsible-ai/openai/data-privacy (seen 2026-10-16)
+# .env: AZURE_API_KEY, AZURE_API_BASE (https://<resource>.openai.azure.com/), AZURE_API_VERSION
+#
+# base_model: your deployment name is free text, so LiteLLM cannot look up the price.
+# base_model points it to the EU Data Zone price (about 10% above global).
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: gpt-5
+    litellm_params:
+      model: azure/<your-datazone-deployment-name>
+      api_base: os.environ/AZURE_API_BASE
+      api_version: os.environ/AZURE_API_VERSION
+      api_key: os.environ/AZURE_API_KEY
+    model_info:
+      base_model: azure/eu/gpt-5-2025-08-07
+
+  - model_name: gpt-5-mini
+    litellm_params:
+      model: azure/<your-datazone-mini-deployment-name>
+      api_base: os.environ/AZURE_API_BASE
+      api_version: os.environ/AZURE_API_VERSION
+      api_key: os.environ/AZURE_API_KEY
+    model_info:
+      base_model: azure/eu/gpt-5-mini-2025-08-07
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Needs its own Data Zone deployment of an embedding model. Not tested in this repo.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: azure/<your-datazone-embedding-deployment-name>
+  #     api_base: os.environ/AZURE_API_BASE
+  #     api_version: os.environ/AZURE_API_VERSION
+  #     api_key: os.environ/AZURE_API_KEY
+  #   model_info:
+  #     mode: embedding
+  #     base_model: azure/text-embedding-3-small

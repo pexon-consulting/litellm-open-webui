@@ -1,0 +1,47 @@
+# STACKIT AI Model Serving (Schwarz Digits, Germany)
+# - Regions only in Germany (eu01) and Austria (eu02). Request data is not stored, not used for training.
+# - OpenAI-compatible API, no dedicated LiteLLM provider: use "openai/" plus api_base.
+#   The first "openai/" is the LiteLLM prefix, the rest is the STACKIT model id.
+# Sources: https://docs.stackit.cloud/products/data-and-ai/ai-model-serving/ (seen 2026-10-16)
+# .env: STACKIT_AI_TOKEN
+#
+# Prices: LiteLLM does not know these models, so without the cost lines spend stays 0 and
+# budgets never trigger. STACKIT bills in EUR (0.45 / 0.65 per 1M tokens, net, 2026-10-16).
+# LiteLLM has no currency; the numbers below are EUR. Do not mix with USD-priced models
+# in the same budget, or convert them first.
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: gpt-oss-120b
+    litellm_params:
+      model: openai/openai/gpt-oss-120b
+      api_base: https://api.openai-compat.model-serving.eu01.onstackit.cloud/v1
+      api_key: os.environ/STACKIT_AI_TOKEN
+      input_cost_per_token: 0.00000045
+      output_cost_per_token: 0.00000065
+
+  - model_name: llama-3.3-70b
+    litellm_params:
+      model: openai/cortecs/Llama-3.3-70B-Instruct-FP8-Dynamic
+      api_base: https://api.openai-compat.model-serving.eu01.onstackit.cloud/v1
+      api_key: os.environ/STACKIT_AI_TOKEN
+      input_cost_per_token: 0.00000045
+      output_cost_per_token: 0.00000065
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # STACKIT lists e5-mistral-7b and Qwen3-VL-Embedding-8B as shared embedding models
+  # (as of 2026-10-16). Not tested in this repo: copy the exact model id and EUR price
+  # from the STACKIT model list.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: openai/<stackit-embedding-model-id>
+  #     api_base: https://api.openai-compat.model-serving.eu01.onstackit.cloud/v1
+  #     api_key: os.environ/STACKIT_AI_TOKEN
+  #     input_cost_per_token: <EUR per input token>
+  #   model_info:
+  #     mode: embedding

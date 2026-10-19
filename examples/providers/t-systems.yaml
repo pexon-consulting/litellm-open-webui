@@ -1,0 +1,38 @@
+# T-Systems AI Foundation Services / LLM Hub (Germany)
+# - Open-source models run on T-Cloud in Germany; data is processed in the EU/EEA and not stored.
+# - Proprietary models (GPT, Claude, Gemini, Mistral Medium) are forwarded to Azure or GCP,
+#   which "may use sub-processors worldwide". For EU-only processing, stay with the open models.
+# - OpenAI-compatible API. Note the base path /v2, not /v1.
+# Sources: https://docs.llmhub.t-systems.net/models/, https://docs.llmhub.t-systems.net/reference/api-endpoints/ (seen 2026-10-16)
+# .env: TSYSTEMS_LLMHUB_API_KEY
+#
+# Prices: not published in a form we could verify. Uncomment input_cost_per_token /
+# output_cost_per_token and put in your contract prices. Until then spend stays 0 and no
+# budget triggers. Do not use 0 as a placeholder: LiteLLM treats an explicit 0 as "free".
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: gpt-oss-120b
+    litellm_params:
+      model: openai/gpt-oss-120b
+      api_base: https://llm-server.llmhub.t-systems.net/v2
+      api_key: os.environ/TSYSTEMS_LLMHUB_API_KEY
+      # input_cost_per_token: <contract price per input token>
+      # output_cost_per_token: <contract price per output token>
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Not tested in this repo: take an embedding model id from
+  # https://docs.llmhub.t-systems.net/models/ and your contract price. If your contract has
+  # no embedding model, keep the "embedding" entry from another provider file in models.yaml.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: openai/<llmhub-embedding-model-id>
+  #     api_base: https://llm-server.llmhub.t-systems.net/v2
+  #     api_key: os.environ/TSYSTEMS_LLMHUB_API_KEY
+  #   model_info:
+  #     mode: embedding

@@ -1,0 +1,44 @@
+# IONOS AI Model Hub (Germany)
+# - IONOS states: inference only in German data centres, prompts and outputs are not logged
+#   or stored, only metadata. No third-party sub-processors. ISO 27001 and BSI C5. DPA is part of the contract.
+# - OpenAI-compatible API: use "openai/" plus api_base.
+# - IONOS retires models regularly (e.g. Mistral Nemo on 22 Oct 2026). Check the model list.
+# Sources: https://docs.ionos.com/cloud/ai/ai-model-hub/ (seen 2026-10-16)
+# .env: IONOS_API_TOKEN
+#
+# Prices in EUR per token (price list valid from 15 Oct 2026). See stackit.yaml for the currency note.
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: gpt-oss-120b
+    litellm_params:
+      model: openai/openai/gpt-oss-120b
+      api_base: https://openai.inference.de-txl.ionos.com/v1
+      api_key: os.environ/IONOS_API_TOKEN
+      input_cost_per_token: 0.00000015
+      output_cost_per_token: 0.00000065
+
+  - model_name: llama-3.3-70b
+    litellm_params:
+      model: openai/meta-llama/Llama-3.3-70B-Instruct
+      api_base: https://openai.inference.de-txl.ionos.com/v1
+      api_key: os.environ/IONOS_API_TOKEN
+      input_cost_per_token: 0.00000065
+      output_cost_per_token: 0.00000065
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Not tested in this repo: take an embedding model id from the IONOS model list and
+  # its EUR price from the IONOS price list.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: openai/<ionos-embedding-model-id>
+  #     api_base: https://openai.inference.de-txl.ionos.com/v1
+  #     api_key: os.environ/IONOS_API_TOKEN
+  #     input_cost_per_token: <EUR per input token>
+  #   model_info:
+  #     mode: embedding

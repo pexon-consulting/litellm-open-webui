@@ -1,0 +1,33 @@
+# Models for the end-to-end tests. Same names as litellm/models.yaml, but every
+# entry points to the mock LLM (tests/mock-llm), so the real config.yaml is tested.
+# mistral-small has an invented high price so that budgets run out after a few requests.
+# "mistral-medium" always fails, to test the fallback to "mistral-small" in config.yaml.
+
+model_list:
+  - model_name: mistral-small
+    litellm_params:
+      model: openai/mock-small
+      api_base: http://mock-llm:8000/v1
+      api_key: not-needed
+      input_cost_per_token: 0.001
+      output_cost_per_token: 0.002
+
+  - model_name: mistral-medium
+    litellm_params:
+      model: openai/fail-always
+      api_base: http://mock-llm:8000/v1
+      api_key: not-needed
+      # Realistic price on purpose. LiteLLM reserves the worst-case cost of a
+      # request before sending it, and skips a fallback once that reservation
+      # fills the key budget (see docs/budgets.md).
+      input_cost_per_token: 0.0000004
+      output_cost_per_token: 0.000002
+
+  - model_name: embedding
+    litellm_params:
+      model: openai/mock-embed
+      api_base: http://mock-llm:8000/v1
+      api_key: not-needed
+      input_cost_per_token: 0.0001
+    model_info:
+      mode: embedding

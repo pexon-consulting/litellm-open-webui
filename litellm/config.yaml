@@ -1,0 +1,56 @@
+# LiteLLM Proxy configuration (open-source features only, no enterprise license needed).
+# Models live in models.yaml. Copy entries from examples/providers/ into it.
+# Careful: "include" merges only top-level keys. Lists (model_list) are appended, everything
+# else is replaced. Keep router_settings, litellm_settings and general_settings in this file.
+# Reference: https://docs.litellm.ai/docs/proxy/config_settings
+
+include:
+  - models.yaml
+  - guardrails.yaml
+
+litellm_settings:
+  # Drop OpenAI parameters a provider does not support instead of failing the request
+  drop_params: true
+  # Keep prompts and completions out of every logging callback (metadata and spend are still logged)
+  turn_off_message_logging: true
+  # Do not send key alias, user id, team id to logging callbacks
+  redact_user_api_key_info: true
+  # Clients may not switch logging off for single requests with "no-log": true
+  global_disable_no_log_param: true
+  request_timeout: 600
+  # Default budget for every Open WebUI user without an own budget. scripts/bootstrap.py creates
+  # the budget row "per-user-default" (amount and period in .env: USER_BUDGET_USD, USER_BUDGET_PERIOD).
+  max_end_user_budget_id: per-user-default
+
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 2
+  allowed_fails: 3
+  cooldown_time: 30
+  # If a model fails (after retries), try the next one. Names refer to models.yaml.
+  fallbacks:
+    - mistral-medium: ["mistral-small"]
+  # Shared state (rate limits, cooldowns) for more than one LiteLLM instance
+  redis_host: os.environ/REDIS_HOST
+  redis_port: os.environ/REDIS_PORT
+  redis_password: os.environ/REDIS_PASSWORD
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  # GDPR: never write prompts or responses into the spend log table
+  store_prompts_in_spend_logs: false
+  # GDPR: delete spend log rows (user, key, model, tokens, cost) after 90 days
+  maximum_spend_logs_retention_period: "90d"
+  maximum_spend_logs_retention_interval: "1d"
+  # Write spend to the database every 10 s plus 0-5 s jitter (same as the v1.105 default, set
+  # explicitly so an upstream change does not loosen budgets). Budgets are checked against these
+  # numbers, so a shorter interval means less overshoot when many requests arrive at once.
+  proxy_batch_write_at: 10
+  # Map the user headers Open WebUI sends (ENABLE_FORWARD_USER_INFO_HEADERS) to LiteLLM end users,
+  # so spend and budgets work per person. Use the id, not the e-mail: users can edit names.
+  user_header_mappings:
+    - header_name: X-OpenWebUI-User-Id
+      litellm_user_role: customer
+  # Health endpoints without auth for Docker and load balancers, no model details exposed
+  allow_public_health_readiness_details: false

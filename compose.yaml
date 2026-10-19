@@ -1,0 +1,139 @@
+# LiteLLM Proxy + Open WebUI for companies.
+# Start:   ./scripts/init-env.sh && docker compose up -d --wait && python3 scripts/bootstrap.py
+# Docs:    README.md and docs/
+#
+# Only LiteLLM (4000) and Open WebUI (3000) are published, and only on 127.0.0.1.
+# Put a TLS reverse proxy in front for real users (see compose.tls.yaml).
+
+name: llm-gateway
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    # pgvector image = official Postgres 16 plus the vector extension for Open WebUI RAG
+    image: pgvector/pgvector:0.8.1-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: llm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run ./scripts/init-env.sh first}
+      POSTGRES_DB: litellm
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U llm -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logging
+
+  redis:
+    image: redis:7.4.11-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?run ./scripts/init-env.sh first}", "--save", "", "--appendonly", "no"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: *logging
+
+  litellm:
+    image: ghcr.io/berriai/litellm:${LITELLM_VERSION:-v1.105.1}
+    restart: unless-stopped
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    env_file: .env
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?run ./scripts/init-env.sh first}
+      LITELLM_SALT_KEY: ${LITELLM_SALT_KEY:?run ./scripts/init-env.sh first}
+      DATABASE_URL: postgresql://llm:${POSTGRES_PASSWORD}@postgres:5432/litellm
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      LITELLM_MODE: PRODUCTION
+      LITELLM_LOG: ERROR
+      STORE_MODEL_IN_DB: "False"
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+      - ./litellm/models.yaml:/app/models.yaml:ro
+      - ./litellm/guardrails.yaml:/app/guardrails.yaml:ro
+    ports:
+      - "127.0.0.1:${LITELLM_PORT:-4000}:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4000/health/readiness', timeout=5)"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 40s
+    logging: *logging
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_VERSION:-v0.12.2}
+    restart: unless-stopped
+    environment:
+      WEBUI_URL: ${WEBUI_URL:-http://localhost:3000}
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?run ./scripts/init-env.sh first}
+      DATABASE_URL: postgresql://llm:${POSTGRES_PASSWORD}@postgres:5432/openwebui
+      VECTOR_DB: pgvector
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      WEBSOCKET_MANAGER: redis
+      ENABLE_WEBSOCKET_SUPPORT: "true"
+      # All model traffic goes through LiteLLM with one virtual key (registered by scripts/bootstrap.py)
+      OPENAI_API_BASE_URL: http://litellm:4000/v1
+      OPENAI_API_KEY: ${OPENWEBUI_LITELLM_KEY:?run ./scripts/init-env.sh first}
+      ENABLE_OLLAMA_API: "false"
+      # Document embeddings (RAG) also go through LiteLLM, model "embedding" in models.yaml
+      RAG_EMBEDDING_ENGINE: openai
+      RAG_EMBEDDING_MODEL: ${RAG_EMBEDDING_MODEL:-embedding}
+      # No downloads from Hugging Face, no version check against GitHub
+      OFFLINE_MODE: "true"
+      # Sends X-OpenWebUI-User-Id etc. so LiteLLM can track spend per user
+      ENABLE_FORWARD_USER_INFO_HEADERS: "true"
+      # Sign-up: the first account becomes admin. Open WebUI then switches sign-up off in its
+      # database, whatever this variable says. To let colleagues register, switch it on in
+      # Admin Panel > Settings > General; new accounts then wait for approval (pending).
+      ENABLE_SIGNUP: "true"
+      DEFAULT_USER_ROLE: pending
+      # Privacy defaults (see docs/gdpr.md)
+      ENABLE_ADMIN_CHAT_ACCESS: "false"
+      ENABLE_COMMUNITY_SHARING: "false"
+      ENABLE_ADMIN_EXPORT: "false"
+      # Personal Open WebUI API keys stay off (also the default); stored in the database after the first start
+      ENABLE_API_KEYS: "false"
+      SCARF_NO_ANALYTICS: "true"
+      DO_NOT_TRACK: "true"
+      ANONYMIZED_TELEMETRY: "false"
+    volumes:
+      - openwebui_data:/app/backend/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    ports:
+      - "127.0.0.1:${OPEN_WEBUI_PORT:-3000}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      litellm:
+        condition: service_healthy
+    logging: *logging
+
+volumes:
+  postgres_data:
+  openwebui_data:

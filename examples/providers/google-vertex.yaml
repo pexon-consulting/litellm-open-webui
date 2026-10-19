@@ -1,0 +1,53 @@
+# Google Vertex AI, EU multi-region
+# - vertex_location "eu" uses https://aiplatform.eu.rep.googleapis.com and covers EU member
+#   states only (no UK, no CH). The "global" endpoint gives no data residency guarantee.
+# - Not every model is available in "eu"; check the per-model table before adding one.
+#   Claude Sonnet 4.5/4.6 and Haiku 4.5: "eu" and europe-west1. Claude 5.x: "eu" only.
+# - Prompts may be logged for abuse monitoring; a zero data retention exception can be requested.
+#   Grounding with Google Search stores data for 3 days.
+# Sources: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency,
+#          https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance (seen 2026-10-16)
+# .env: VERTEX_PROJECT, VERTEX_CREDENTIALS=/app/vertex-sa.json
+# The service account file must be mounted into the litellm container, e.g. compose.override.yaml:
+#   services:
+#     litellm:
+#       volumes:
+#         - ./secrets/vertex-sa.json:/app/vertex-sa.json:ro
+# (keep ./secrets/ out of git)
+#
+# Prices: LiteLLM uses its built-in list prices here. Regional and multi-region endpoints can
+# cost more than the global endpoint (about 10% for several models). If budgets must be exact,
+# add input_cost_per_token / output_cost_per_token from the Vertex pricing page.
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: gemini-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: eu
+      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+
+  - model_name: claude-sonnet
+    litellm_params:
+      model: vertex_ai/claude-sonnet-4-5@20250929
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: europe-west1
+      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Google lists embeddings for the "eu" multi-region. Not tested in this repo: check the
+  # model id on the Vertex data residency page.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: vertex_ai/gemini-embedding-001
+  #     vertex_project: os.environ/VERTEX_PROJECT
+  #     vertex_location: eu
+  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
+  #   model_info:
+  #     mode: embedding

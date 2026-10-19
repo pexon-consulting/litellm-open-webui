@@ -1,0 +1,47 @@
+# AWS Bedrock, EU geo cross-region inference profiles (prefix "eu.")
+# - From eu-central-1 (Frankfurt) the "eu." profile routes to eu-central-1, eu-north-1, eu-south-1,
+#   eu-south-2, eu-west-1 and eu-west-3. From eu-central-2 it also includes Zurich, from eu-west-2
+#   also London. Zurich and London are not EU member states, so start in eu-central-1.
+# - AWS advises checking destinations with GetInferenceProfile instead of trusting the prefix.
+# - AWS states that model providers (e.g. Anthropic) get no access to prompts or completions.
+# - Bedrock data retention mode is set per region; "none" means zero data retention.
+# Sources: Bedrock model cards, https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html,
+#          https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html (seen 2026-10-16)
+# .env: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY (an IAM user allowed to call bedrock:InvokeModel only)
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: claude-sonnet
+    litellm_params:
+      model: bedrock/eu.anthropic.claude-sonnet-4-6
+      aws_region_name: eu-central-1
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+
+  - model_name: claude-haiku
+    litellm_params:
+      model: bedrock/eu.anthropic.claude-haiku-5-5
+      aws_region_name: eu-central-1
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      # USD per token, eu-central-1 price list 2026-10-12. LiteLLM's built-in price list has the
+      # same values; set here so budgets stay right if that list changes. (The built-in "eu."
+      # Sonnet 4.6 price already includes the EU surcharge, so claude-sonnet needs no line.)
+      input_cost_per_token: 0.00000011
+      output_cost_per_token: 0.00000055
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Not tested in this repo: check that the model is enabled for your account in eu-central-1.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: bedrock/amazon.titan-embed-text-v2:0
+  #     aws_region_name: eu-central-1
+  #     aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+  #     aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+  #   model_info:
+  #     mode: embedding

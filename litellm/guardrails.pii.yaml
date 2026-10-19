@@ -1,0 +1,10 @@
+# PII masking with Microsoft Presidio before the prompt leaves your network.
+# Mounted by compose.pii.yaml as /app/guardrails.yaml.
+guardrails:
+  - guardrail_name: presidio-pii
+    litellm_params:
+      guardrail: presidio
+      mode: pre_call
+      default_on: true
+      # Language of the NLP model for names and places. The analyzer image knows "de" and "en".
+      presidio_language: de

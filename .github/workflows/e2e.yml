@@ -1,0 +1,69 @@
+name: e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly, to notice when a pinned image disappears or upstream behaviour changes
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Config file checks
+        run: |
+          pip install pytest==9.1.1 pyyaml==6.0.3
+          pytest tests/test_config_files.py -v
+      - name: Validate every compose combination
+        run: |
+          ./scripts/init-env.sh
+          docker compose -f compose.yaml config -q
+          docker compose -f compose.yaml -f compose.pii.yaml config -q
+          DOMAIN=chat.example.com docker compose -f compose.yaml -f compose.tls.yaml config -q
+          DOMAIN=chat.example.com MICROSOFT_CLIENT_ID=x MICROSOFT_CLIENT_SECRET=x MICROSOFT_CLIENT_TENANT_ID=x \
+            docker compose -f compose.yaml -f compose.tls.yaml -f compose.entra.yaml config -q
+          docker run --rm -e DOMAIN=chat.example.com -v "$PWD/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2.10.2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+          docker compose -f compose.yaml -f compose.pii.yaml -f compose.test.yaml config -q
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      COMPOSE_FILE: compose.yaml:compose.pii.yaml:compose.test.yaml
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Create .env with random secrets
+        run: ./scripts/init-env.sh
+      - name: Start the stack with mock LLM and PII masking
+        run: docker compose up -d --wait --wait-timeout 600
+      - name: Register Open WebUI key and default user budget
+        run: python3 scripts/bootstrap.py
+      - name: Run end-to-end tests
+        run: |
+          pip install pytest==9.1.1 pyyaml==6.0.3
+          pytest tests -v -rs
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+      - name: Stop
+        if: always()
+        run: docker compose down -v

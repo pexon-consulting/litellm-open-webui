@@ -1,0 +1,39 @@
+# Single sign-on for Open WebUI with Microsoft Entra ID.
+#   docker compose -f compose.yaml -f compose.tls.yaml -f compose.entra.yaml up -d
+#
+# Entra admin center > App registrations > New registration:
+#   Redirect URI (Web): https://<your-domain>/oauth/microsoft/callback
+#   Certificates & secrets: new client secret
+#   Optional, for roles: App roles "admin" and "user", assign them under Enterprise applications
+# .env: MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, MICROSOFT_CLIENT_TENANT_ID
+#
+# This is Open WebUI's own OAuth login, free in the open-source edition. It is not LiteLLM SSO
+# (LiteLLM's admin UI SSO is free for up to 5 users, beyond that it needs an enterprise license).
+
+services:
+  open-webui:
+    environment:
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:?set MICROSOFT_CLIENT_ID in .env}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:?set MICROSOFT_CLIENT_SECRET in .env}
+      MICROSOFT_CLIENT_TENANT_ID: ${MICROSOFT_CLIENT_TENANT_ID:?set MICROSOFT_CLIENT_TENANT_ID in .env}
+      # Set explicitly: behind a reverse proxy the generated URL can come out as http://
+      # WEBUI_URL must be the public https:// address. Open WebUI stores it on the first start,
+      # so set it in .env before that, or correct it later in Admin Panel > Settings > General.
+      MICROSOFT_REDIRECT_URI: ${WEBUI_URL}/oauth/microsoft/callback
+      # Open WebUI needs this for logout, also with Microsoft
+      OPENID_PROVIDER_URL: https://login.microsoftonline.com/${MICROSOFT_CLIENT_TENANT_ID}/v2.0/.well-known/openid-configuration
+      # New colleagues get an account on first login, with DEFAULT_USER_ROLE (pending)
+      ENABLE_OAUTH_SIGNUP: "true"
+      # Off by default: Open WebUI calls merging by e-mail "considered unsafe" (account takeover
+      # if the identity provider does not verify e-mails). Set ENTRA_MERGE_BY_EMAIL=true only to
+      # move existing password accounts over once, then switch it off again.
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: ${ENTRA_MERGE_BY_EMAIL:-false}
+      # Roles from the token claim "roles" (Entra app roles). Without app roles, leave this
+      # false and approve users in the admin panel.
+      ENABLE_OAUTH_ROLE_MANAGEMENT: ${ENTRA_ROLE_MANAGEMENT:-false}
+      OAUTH_ROLES_CLAIM: roles
+      OAUTH_ALLOWED_ROLES: user,admin
+      OAUTH_ADMIN_ROLES: admin
+      # Once SSO works, hide the password form. Open WebUI stores this in its database on the
+      # first start; on a running instance change it in Admin Panel > Settings > General.
+      ENABLE_LOGIN_FORM: ${ENABLE_LOGIN_FORM:-true}

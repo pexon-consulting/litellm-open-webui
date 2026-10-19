@@ -1,0 +1,34 @@
+# Self-hosted models (vLLM or Ollama). Data residency is wherever your hardware runs.
+# LiteLLM cannot price your own GPUs. Set a cost per token if you want budgets to mean
+# something (e.g. GPU cost per hour divided by tokens per hour), otherwise spend stays 0.
+# Sources: https://docs.litellm.ai/docs/providers/vllm, https://docs.litellm.ai/docs/providers/ollama (seen 2026-10-16)
+# .env: VLLM_API_BASE (e.g. http://gpu-server:8000/v1)
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: local-vllm
+    litellm_params:
+      model: hosted_vllm/<model-id-served-by-vllm>
+      api_base: os.environ/VLLM_API_BASE
+
+  # Ollama on the Docker host. From inside the litellm container the host is
+  # host.docker.internal (Docker Desktop) or the bridge IP on Linux, not localhost.
+  - model_name: local-ollama
+    litellm_params:
+      model: ollama_chat/llama3.3
+      api_base: http://host.docker.internal:11434
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Serve an embedding model with vLLM or Ollama (e.g. "ollama pull nomic-embed-text").
+  # Not tested in this repo.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: ollama/nomic-embed-text
+  #     api_base: http://host.docker.internal:11434
+  #   model_info:
+  #     mode: embedding

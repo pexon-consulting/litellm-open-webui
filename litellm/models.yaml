@@ -1,0 +1,46 @@
+# Your models. Start with one provider from examples/providers/, add more later.
+# The model_name is what users see in Open WebUI. Several entries with the same
+# model_name are load balanced. Secrets always come from .env via os.environ/.
+#
+# Default: Mistral via the EU endpoint (api.eu.mistral.ai). Needs MISTRAL_API_KEY in .env.
+#
+# Switching provider? Keep three things consistent:
+# - router_settings.fallbacks in config.yaml names models from this file; update it.
+# - Open WebUI needs a model named "embedding" (mode: embedding) for document search.
+# - Same model_name twice means load balancing. Rename entries when you combine provider files.
+#
+# Prices: budgets only work if LiteLLM knows what a token costs. Its built-in price list
+# has Mistral's global prices; the EU endpoint costs 10% more, so the prices are set here
+# (USD per token, Mistral list price x 1.1, as of 2026-10-16). Check them against
+# https://docs.mistral.ai/inference/pricing before you rely on the numbers.
+
+model_list:
+  - model_name: mistral-small
+    litellm_params:
+      model: mistral/mistral-small-2603
+      api_base: https://api.eu.mistral.ai/v1
+      api_key: os.environ/MISTRAL_API_KEY
+      input_cost_per_token: 0.000000165
+      output_cost_per_token: 0.00000066
+    model_info:
+      description: "Mistral Small, processed in the EU (api.eu.mistral.ai)"
+
+  - model_name: mistral-medium
+    litellm_params:
+      model: mistral/mistral-medium-3-5
+      api_base: https://api.eu.mistral.ai/v1
+      api_key: os.environ/MISTRAL_API_KEY
+      input_cost_per_token: 0.00000165
+      output_cost_per_token: 0.00000825
+    model_info:
+      description: "Mistral Medium, processed in the EU (api.eu.mistral.ai)"
+
+  # Used by Open WebUI for document search (RAG_EMBEDDING_MODEL=embedding)
+  - model_name: embedding
+    litellm_params:
+      model: mistral/mistral-embed
+      api_base: https://api.eu.mistral.ai/v1
+      api_key: os.environ/MISTRAL_API_KEY
+      input_cost_per_token: 0.00000011
+    model_info:
+      mode: embedding

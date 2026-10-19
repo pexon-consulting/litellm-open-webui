@@ -1,0 +1,27 @@
+# Test overlay: replaces the real models with a local mock LLM.
+# docker compose -f compose.yaml -f compose.test.yaml up -d --wait
+# Add -f compose.pii.yaml before this file to test PII masking too.
+# Used by tests/ and CI. Costs nothing, needs no provider key.
+
+services:
+  mock-llm:
+    image: python:3.13.16-alpine
+    command: ["python", "/app/server.py"]
+    volumes:
+      - ./tests/mock-llm/server.py:/app/server.py:ro
+    ports:
+      # Host port: MOCK_LLM_PORT in .env; the tests read MOCK_LLM_URL or derive it from MOCK_LLM_PORT
+      - "127.0.0.1:${MOCK_LLM_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  litellm:
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+      - ./tests/models.test.yaml:/app/models.yaml:ro
+    depends_on:
+      mock-llm:
+        condition: service_healthy

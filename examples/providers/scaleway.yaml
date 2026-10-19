@@ -1,0 +1,43 @@
+# Scaleway Generative APIs (France, Paris)
+# - Zero data retention by default. Exception: full requests may be kept up to two weeks on
+#   suspected misuse or HTTP 500 errors. No training. Scaleway's FAQ says
+#   api.scaleway.ai stays in Europe.
+# - LiteLLM provider "scaleway/" (base https://api.scaleway.ai/v1).
+# Sources: https://www.scaleway.com/en/docs/generative-apis/reference-content/data-privacy/,
+#          https://docs.litellm.ai/docs/providers/scaleway (seen 2026-10-16)
+# .env: SCW_SECRET_KEY
+#
+# Prices in EUR per token (2026-10-16). LiteLLM's price list does not have them, so they are
+# set here; see stackit.yaml for the currency note.
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: mistral-small-3.2
+    litellm_params:
+      model: scaleway/mistral-small-3.2-24b-instruct-2506
+      api_key: os.environ/SCW_SECRET_KEY
+      input_cost_per_token: 0.00000015
+      output_cost_per_token: 0.00000035
+
+  - model_name: gpt-oss-120b
+    litellm_params:
+      model: scaleway/gpt-oss-120b
+      api_key: os.environ/SCW_SECRET_KEY
+      input_cost_per_token: 0.00000015
+      output_cost_per_token: 0.0000006
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # Not tested in this repo: take an embedding model id and its EUR price from the
+  # Scaleway Generative APIs model list.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: scaleway/<scaleway-embedding-model-id>
+  #     api_key: os.environ/SCW_SECRET_KEY
+  #     input_cost_per_token: <EUR per input token>
+  #   model_info:
+  #     mode: embedding
