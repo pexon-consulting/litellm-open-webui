@@ -231,5 +231,7 @@ of their owners. This project is not affiliated with any of them. Licences of th
 
 Licence: [MIT](LICENSE). Changes: [CHANGELOG.md](CHANGELOG.md). Security: [SECURITY.md](SECURITY.md).
 
-Maintained by Pexon Consulting. If you want help running LiteLLM in your company, see our
+Maintained by Pexon Consulting GmbH. If you want help running LiteLLM in your company, see our
 [LiteLLM implementation service](https://pexon-consulting.de/ki-beratung/litellm/litellm-implementierung/).
+
+Provider identification: [Legal notice (Impressum)](https://pexon-consulting.de/impressum/) · [Privacy policy (Datenschutz)](https://pexon-consulting.de/datenschutz/)
