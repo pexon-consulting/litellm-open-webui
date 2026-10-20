@@ -217,14 +217,19 @@ not the `main-latest` image, which is no longer updated. Details in
 
 ## Disclaimer
 
-This repository describes technical settings and quotes laws and provider documents as of
-16 October 2026. It is not legal advice, and the authors are not lawyers or data protection
-officers. There is no guarantee that a setup based on it complies with the GDPR or other law.
-You remain the controller (Art. 4(7) GDPR) and are responsible for the legal basis, the record
-of processing (Art. 30), the DPIA decision (Art. 35), data processing agreements with providers
-(Art. 28), transfer safeguards (Art. 44 ff.) and works council involvement. Provider terms
-change; the provider's current documentation and your contract prevail. Provided "as is" under
-the MIT License, without warranty.
+This repository is a technical aid, not advice. It describes technical settings and quotes
+laws and provider documents as of 16 October 2026. It is not legal advice, and the authors
+are not lawyers or data protection officers. There is no guarantee that a setup based on it
+complies with the GDPR or other law. You remain the controller (Art. 4(7) GDPR) and are
+responsible for the legal basis, the record of processing (Art. 30), the DPIA decision
+(Art. 35), data processing agreements with providers (Art. 28), transfer safeguards
+(Art. 44 ff.) and works council involvement. Provider terms change; the provider's current
+documentation and your contract prevail.
+
+We accept no liability for the output of AI systems. Answers, summaries and other content
+produced by a language model through this stack come from that model, not from us. They can
+be wrong, incomplete or fabricated, and masking does not change that. Check every output
+before you rely on it or pass it on. Provided "as is" under the MIT License, without warranty.
 
 LiteLLM, Open WebUI, Presidio and all other product and company names are names or trademarks
 of their owners. This project is not affiliated with any of them. Licences of the images used: [NOTICE](NOTICE).

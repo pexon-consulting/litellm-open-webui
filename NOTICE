@@ -37,3 +37,17 @@ Mistral, OpenAI, STACKIT, IONOS, OVHcloud, Scaleway and T-Systems are names or t
 of their respective owners. This project is not affiliated with, endorsed by or sponsored
 by any of them. All other product and company names mentioned in this repository are
 trademarks of their respective owners; no affiliation, endorsement or sponsorship is implied.
+
+Liability
+---------
+This repository is a technical aid, not advice.
+
+Anything a language model produces through this stack comes from that model,
+not from us. Masking does not change that. We accept no liability for the
+output of AI systems. Check every output before you rely on it or pass it on.
+
+The software and the texts are provided free of charge and without any
+warranty of particular qualities. To the extent permitted by law, liability is
+excluded. This does not affect liability for intent and gross negligence, for
+injury to life, body or health, for defects fraudulently concealed and under
+the German Product Liability Act (Produkthaftungsgesetz).
