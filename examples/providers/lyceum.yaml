@@ -1,0 +1,46 @@
+# Lyceum (Germany, Berlin / Switzerland, Zurich) - serverless models run in Paris and Finland
+# - "We don't keep your prompts or outputs, and we never use them for training."
+#   Prompts and responses are not logged or written to a database (lyceum.technology/legal/).
+# - OpenAI-compatible base URL https://api.lyceum.technology/openai/v1 (note the /openai path).
+#   LiteLLM has no lyceum/ prefix, so this file uses openai/ with api_base.
+# - Only serverless models are pinned to Paris and Finland. Dedicated endpoint and VM
+#   locations are agreed per contract.
+# Sources: https://lyceum.technology/llms.txt, https://lyceum.technology/models/,
+#          https://docs.lyceum.technology/docs/inference/serverless (seen 2026-11-11)
+# .env: LYCEUM_API_KEY
+#
+# Prices in USD per token (2026-11-11, lyceum.technology/models/). Lyceum bills in USD,
+# unlike the EUR providers in this folder; see stackit.yaml for the currency note.
+
+# Before you copy this file over litellm/models.yaml:
+# - Update router_settings.fallbacks in litellm/config.yaml. It names mistral-medium and
+#   mistral-small, which do not exist in this file.
+# - Open WebUI needs a model called "embedding" for document search (see below).
+# - Run .venv/bin/pytest tests/test_config_files.py before you restart LiteLLM.
+
+model_list:
+  - model_name: glm-5.3
+    litellm_params:
+      model: openai/z-ai/glm-5.3
+      api_base: https://api.lyceum.technology/openai/v1
+      api_key: os.environ/LYCEUM_API_KEY
+      input_cost_per_token: 0.0000014
+      output_cost_per_token: 0.0000044
+
+  - model_name: qwen3.8-27b
+    litellm_params:
+      model: openai/qwen/qwen3.8-27b
+      api_base: https://api.lyceum.technology/openai/v1
+      api_key: os.environ/LYCEUM_API_KEY
+      input_cost_per_token: 0.0000004
+      output_cost_per_token: 0.0000024
+
+  # Embedding model for Open WebUI document search. Uncomment it, or document upload fails.
+  # - model_name: embedding
+  #   litellm_params:
+  #     model: openai/qwen/qwen3-embedding-8b
+  #     api_base: https://api.lyceum.technology/openai/v1
+  #     api_key: os.environ/LYCEUM_API_KEY
+  #     input_cost_per_token: 0.00000002
+  #   model_info:
+  #     mode: embedding

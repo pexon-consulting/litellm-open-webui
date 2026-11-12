@@ -19,6 +19,7 @@ All provider statements were read on 2026-10-16. Providers change their terms, s
 - [IONOS AI Model Hub](#ionos-ai-model-hub)
 - [OVHcloud AI Endpoints](#ovhcloud-ai-endpoints)
 - [Scaleway Generative APIs](#scaleway-generative-apis)
+- [Lyceum](#lyceum)
 - [T-Systems LLM Hub](#t-systems-llm-hub)
 - [Nebius Token Factory](#nebius-token-factory)
 - [Aleph Alpha PhariaAI](#aleph-alpha-phariaai)
@@ -56,6 +57,7 @@ All provider statements were read on 2026-10-16. Providers change their terms, s
 | IONOS | German data centres only | `openai/` | `examples/providers/ionos.yaml` |
 | OVHcloud | Gravelines, France | `ovhcloud/` | `examples/providers/ovhcloud.yaml` |
 | Scaleway | Paris, France | `scaleway/` | `examples/providers/scaleway.yaml` |
+| Lyceum | serverless models in Paris and Finland | `openai/` | `examples/providers/lyceum.yaml` |
 | T-Systems | open models on T-Cloud Germany | `openai/` | `examples/providers/t-systems.yaml` |
 | Nebius | only dedicated endpoints have a region commitment | `nebius/` | none |
 | Self-hosted | wherever your hardware is | `hosted_vllm/`, `ollama_chat/` | `examples/providers/self-hosted.yaml` |
@@ -265,6 +267,18 @@ Keep the service account file in `./secrets/`, out of git. The example file uses
 
 **In this repo.** `examples/providers/scaleway.yaml` (`mistral-small-3.2`, `gpt-oss-120b`), prices in EUR, `.env`: `SCW_SECRET_KEY`.
 
+## Lyceum
+
+**What "EU" means** ([facts](https://lyceum.technology/llms.txt), [legal](https://lyceum.technology/legal/), as of 2026-11-11): serverless models run in Paris and Finland. Dedicated endpoint and GPU VM locations are agreed per contract. Lyceum Technology Germany GmbH (Berlin), with an office in Zurich. Serves open models such as Kimi K3, GLM-5.3, DeepSeek V4 Pro and Qwen3.8 through one OpenAI-compatible API, billed per token, no base fee.
+
+**Retention.** "We don't keep your prompts or outputs, and we never use them for training." Prompts and responses are not logged or written to a database ([legal](https://lyceum.technology/legal/)).
+
+**Contract.** The DPA is Annex 1 of the terms and applies on acceptance; TOMs and the subprocessor list are available on request through the [trust portal](https://trust.lyceum.technology/resources). Subprocessor list **not verified** (not public).
+
+**Pitfalls.** The base URL path is `/openai/v1`, not `/v1`. Prices are in USD.
+
+**In this repo.** `examples/providers/lyceum.yaml` (`glm-5.3`, `qwen3.8-27b`), prices in USD, `.env`: `LYCEUM_API_KEY`.
+
 ## T-Systems LLM Hub
 
 **What "EU" means** ([models](https://docs.llmhub.t-systems.net/models/), as of 2026-10-16): open-source models run on T-Cloud in Germany; data is processed in the EU/EEA and not stored. No training regardless of model.
@@ -325,8 +339,10 @@ List prices per 1M tokens for EU options, net of VAT unless stated, as of 2026-1
 | Scaleway gpt-oss-120b | 0.15 | 0.60 | EUR |
 | Scaleway llama-3.3-70b-instruct | 0.90 | 0.90 | EUR |
 | Scaleway mistral-small-3.2-24b-instruct-2506 | 0.15 | 0.35 | EUR |
+| Lyceum GLM-5.3 (`z-ai/glm-5.3`), as of 2026-11-11 | 1.40 | 4.40 | USD |
+| Lyceum Qwen3.8 27B (`qwen/qwen3.8-27b`), as of 2026-11-11 | 0.40 | 2.40 | USD |
 
-Sources: [Azure retail prices API](https://prices.azure.com/api/retail/prices), the AWS price list for eu-central-1, [Vertex pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing), [Mistral pricing](https://docs.mistral.ai/inference/pricing.md), [STACKIT](https://stackit.com/en/products/data-ai/stackit-ai-model-serving), [IONOS price list](https://docs.ionos.com/cloud/support/general-information/price-list/ionos-cloud-eur-en.md) (valid from 15 October 2026), [OVHcloud](https://www.ovhcloud.com/fr/public-cloud/prices/), [Scaleway](https://www.scaleway.com/en/pricing/model-as-a-service/).
+Sources: [Azure retail prices API](https://prices.azure.com/api/retail/prices), the AWS price list for eu-central-1, [Vertex pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing), [Mistral pricing](https://docs.mistral.ai/inference/pricing.md), [STACKIT](https://stackit.com/en/products/data-ai/stackit-ai-model-serving), [IONOS price list](https://docs.ionos.com/cloud/support/general-information/price-list/ionos-cloud-eur-en.md) (valid from 15 October 2026), [OVHcloud](https://www.ovhcloud.com/fr/public-cloud/prices/), [Scaleway](https://www.scaleway.com/en/pricing/model-as-a-service/), [Lyceum models](https://lyceum.technology/models/).
 
 Notes:
 
